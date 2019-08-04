@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
+const { check, validationResult } = require('express-validator/check');
 
 const Profile = require('../../models/Profile');
 const User = require('../../models/User');
@@ -8,7 +9,7 @@ const User = require('../../models/User');
 // @route   GET api/profile/me
 // @desc    Get current user's profile
 // @access  Private
-router.get('/', auth, async (req, res) => {
+router.get('/me', auth, async (req, res) => {
   try {
     // prettier-ignore
     const profile = await Profile
@@ -27,5 +28,9 @@ router.get('/', auth, async (req, res) => {
     res.status(500).send('Server Error...');
   }
 });
+
+// @route   POST api/profile
+// @desc    Get current user's profile
+// @access  Private
 
 module.exports = router;
