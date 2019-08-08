@@ -30,7 +30,83 @@ router.get('/me', auth, async (req, res) => {
 });
 
 // @route   POST api/profile
-// @desc    Get current user's profile
+// @desc    Create or update user profile
 // @access  Private
+router.post(
+  '/',
+  [
+    auth,
+    check('status', 'Status is required')
+      .not()
+      .isEmpty()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      website,
+      location,
+      bio,
+      status,
+      youtube,
+      facebook,
+      twitter,
+      instagram,
+      linkedin
+    } = req.body;
+
+    // Build profile object
+    const profileFields = {};
+    profileFields.user = req.user.id;
+    if (website) profileFields.website = website;
+    if (location) profileFields.location = location;
+    if (bio) profileFields.bio = bio;
+    if (status) profileFields.status = status;
+
+    // Build social object
+    profileFields.social = {};
+    if (youtube) profileFields.social.youtube = youtube;
+    if (twitter) profileFields.social.twitter = twitter;
+    if (facebook) profileFields.social.facebook = facebook;
+    if (linkedin) profileFields.social.linkedin = linkedin;
+    if (instagram) profileFields.social.instagram = instagram;
+
+    try {
+      let profile = await Profile.findOne({ user: req.user.id });
+      if (profile) {
+        // Update
+        profile = await Profile.findOneAndUpdate(
+          { user: req.user.id },
+          { $set: profileFields },
+          { new: true }
+        );
+
+        return res.json(profile);
+      }
+
+      // Create
+      profile = new Profile(profileFields);
+
+      await profile.save();
+      res.json(profile);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error...');
+    }
+  }
+);
+
+// instead of checking for the object in the db, and handling the cases that it is & not in the db, just use the mongoose updateOne method.
+// Profile.updateOne(
+//   { user: req.user.id },
+//   profileFields,
+//   { upsert: true },
+//   () => {
+//     return res.send(profileFields);
+//   }
+// );
 
 module.exports = router;

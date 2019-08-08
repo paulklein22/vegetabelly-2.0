@@ -4,11 +4,6 @@ const ProfileSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId
   },
-  handle: {
-    type: String,
-    required: true,
-    max: 40
-  },
   website: {
     type: String
   },
